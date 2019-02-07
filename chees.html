@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<h2>JavaScriptChees</h2>
+<div id="board"></div>
+<div id="info"></div>
+<script>
+    var map = Array();
+    var inf = Array();
+
+    var move_color = "white";
+
+    var move_from_x;
+    var move_from_y;
+
+    function init_map() {
+        map = [
+            //y0   y1  y2   y3   y4   y5   y6   y7
+            ["R", "P", " ", " ", " ", " ", "p", "r"], //x=0
+            ["N", "P", " ", " ", " ", " ", "p", "n"], //x=1
+            ["B", "P", " ", " ", " ", " ", "p", "b"], //x=2
+            ["Q", "P", " ", " ", " ", " ", "p", "q"], //x=3
+            ["K", "P", " ", " ", " ", " ", "p", "k"], //x=4
+            ["B", "P", " ", " ", " ", " ", "p", "b"], //x=5
+            ["N", "P", " ", " ", " ", " ", "p", "n"], //x=6
+            ["R", "P", " ", " ", " ", " ", "p", "r"]  //x=7
+        ];
+    }
+
+    function init_inf() {
+        inf = [
+            [" ", " ", " ", " ", " ", " ", " ", " "],
+            [" ", " ", " ", " ", " ", " ", " ", " "],
+            [" ", " ", " ", " ", " ", " ", " ", " "],
+            [" ", " ", " ", " ", " ", " ", " ", " "],
+            [" ", " ", " ", " ", " ", " ", " ", " "],
+            [" ", " ", " ", " ", " ", " ", " ", " "],
+            [" ", " ", " ", " ", " ", " ", " ", " "],
+            [" ", " ", " ", " ", " ", " ", " ", " "],
+        ];
+    }
+
+    function mark_moves_from() {
+        init_inf();
+        for (var sx = 0; sx < map.length; sx++) {
+            for (var sy = 0; sy < map.length; sy++) {
+                for (var dx = 0; dx < map.length; dx++) {
+                    for (var dy = 0; dy < map.length; dy++) {
+                        if (can_move(sx, sy, dx, dy)) {
+                            inf[sx][sy] = 1
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    function mark_moves_to() {
+        init_inf();
+        for (var x = 0; x < map.length; x++) {
+            for (var y = 0; y < map.length; y++) {
+                if (can_move(move_from_x, move_from_y, x, y)) {
+                    inf[x][y] = 2
+                }
+            }
+        }
+    }
+
+    function can_move(sx, sy, dx, dy) {
+        if (!can_move_from(sx, sy)) return false;
+        if (!can_move_to(dx, dy)) return false;
+        return is_correct_move(sx, sy, dx, dy);
+    }
+
+    function is_correct_move(sx, sy, dx, dy) {
+        var figure = map[sx][sy];
+        if (is_king(figure)) return is_correct_king_move(sx, sy, dx, dy);
+        if (is_queen(figure)) return is_correct_queen_move(sx, sy, dx, dy);
+        if (is_bishop(figure)) return is_correct_bishop_move(sx, sy, dx, dy);
+        if (is_knight(figure)) return is_correct_knight_move(sx, sy, dx, dy);
+        if (is_rook(figure)) return is_correct_rook_move(sx, sy, dx, dy);
+        if (is_pawn(figure)) return is_correct_pawn_move(sx, sy, dx, dy);
+        return true;
+    }
+
+    function is_king(figure) {
+        return figure.toUpperCase() === "K";
+    }
+
+    function is_queen(figure) {
+        return figure.toUpperCase() === "Q";
+    }
+
+    function is_bishop(figure) {
+        return figure.toUpperCase() === "B";
+    }
+
+    function is_knight(figure) {
+        return figure.toUpperCase() === "N";
+    }
+
+    function is_rook(figure) {
+        return figure.toUpperCase() === "R";
+    }
+
+    function is_pawn(figure) {
+        return figure.toUpperCase() === "P";
+    }
+
+    function is_correct_king_move(sx, sy, dx, dy) {
+        return (Math.abs(dx - sx) === 1 && Math.abs(dy - sy) === 0) ||
+            (Math.abs(dx - sx) === 0 && Math.abs(dy - sy) === 1)
+    }
+
+    function is_correct_queen_move(sx, sy, dx, dy) {
+        return true;
+    }
+
+    function is_correct_bishop_move(sx, sy, dx, dy) {
+        return true;
+    }
+
+    function is_correct_knight_move(sx, sy, dx, dy) {
+        return (Math.abs(dx - sx) === 1 && Math.abs(dy - sy) === 2) ||
+            (Math.abs(dx - sx) === 2 && Math.abs(dy - sy) === 1)
+    }
+
+    function is_correct_rook_move(sx, sy, dx, dy) {
+        return true;
+    }
+
+    function is_correct_pawn_move(sx, sy, dx, dy) {
+        return true;
+    }
+
+    function can_move_from(x, y) {
+        return get_color(x, y) === move_color;
+    }
+
+    function can_move_to(x, y) {
+
+        if (map[x][y] === "") {
+            return true;
+        }
+        return get_color(x, y) !== move_color;
+    }
+
+    function get_color(x, y) {
+        var figure = map[x][y];
+        if (figure === " ") {
+            return "";
+        }
+        return (figure.toUpperCase() === figure) ? "white" : "black";
+    }
+
+    function click_box(x, y) {
+        if (inf[x][y] === 1) {
+            click_box_from(x, y);
+        }
+
+        if (inf[x][y] === 2) {
+            click_box_to(x, y);
+        }
+    }
+
+    function click_box_from(x, y) {
+        move_from_x = x;
+        move_from_y = y;
+        mark_moves_to();
+        show_map();
+    }
+
+    function click_box_to(x, y) {
+        map[x][y] = map[move_from_x][move_from_y];
+        map[move_from_x][move_from_y] = " ";
+        turn_move();
+        mark_moves_from();
+        show_map();
+    }
+
+    function turn_move() {
+        move_color = move_color === "white" ? "black" : "white";
+    }
+
+    function figure_to_html(figure) {
+        switch (figure) {
+            case "K":
+                return "&#9812;";
+            case "k":
+                return "&#9818;";
+            case "Q":
+                return "&#9813;";
+            case "q":
+                return "&#9819;";
+            case "R":
+                return "&#9814;";
+            case "r":
+                return "&#9820;";
+            case "B":
+                return "&#9815;";
+            case "b":
+                return "&#9821;";
+            case "N":
+                return "&#9816;";
+            case "n":
+                return "&#9822;";
+            case "P":
+                return "&#9817;";
+            case "p":
+                return "&#9823;";
+            default:
+                return "&nbsp;"
+        }
+    }
+
+    function show_map() {
+        var html = "<table border='1' cellpadding='2' cellspacing='0'>";
+        for (var y = map.length - 1; y >= 0; y--) {
+            html += "<tr>";
+            html += "<td>" + y + "&nbsp;</td>";
+            for (var x = 0; x < map.length; x++) {
+                var color = "";
+                if (inf[x][y] === " ") {
+                    color = (x + y) % 2 ? "#eeffee" : "#abcdef";
+                } else {
+                    color = inf[x][y] === 1 ? "#aaffaa" : "#ffaaaa";
+                }
+
+                html += "<td style='height: 50px; width: 50px; " +
+                    "background-color:" + color + ";" +
+                    "text-align: center;" +
+                    "font-size: 40px;" +
+                    "color: #000;'" +
+                    "onclick='click_box(" + x + ", " + y + ")'>";
+                html += figure_to_html(map[x][y]);
+                html += "</td>"
+
+            }
+            html += "</tr>";
+        }
+        html += "<tr>";
+        html += "<td>&nbsp;</td>";
+        for (var x = 0; x < map.length; x++) {
+            html += "<td style='text-align: center;'>" + x + "</td>";
+        }
+        document.getElementById("board").innerHTML = html;
+    }
+
+    function start() {
+        init_map();
+        mark_moves_from();
+        show_map();
+    }
+
+    start();
+</script>
+</body>
+</html>

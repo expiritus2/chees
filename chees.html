@@ -115,16 +115,41 @@
     }
 
     function is_correct_king_move(sx, sy, dx, dy) {
-        return (Math.abs(dx - sx) === 1 && Math.abs(dy - sy) === 0) ||
-            (Math.abs(dx - sx) === 0 && Math.abs(dy - sy) === 1)
+        return (Math.abs(dx - sx) <= 1 && Math.abs(dy - sy) <= 1);
     }
 
     function is_correct_queen_move(sx, sy, dx, dy) {
-        return true;
+        var delta_x = Math.sign(dx - sx);
+        var delta_y = Math.sign(dy - sy);
+
+        do {
+            sx += delta_x;
+            sy += delta_y;
+            if (sx === dx && sy === dy) {
+                return true;
+            }
+        } while (is_empty(sx, sy));
+
+        return false;
     }
 
     function is_correct_bishop_move(sx, sy, dx, dy) {
-        return true;
+        var delta_x = Math.sign(dx - sx);
+        var delta_y = Math.sign(dy - sy);
+
+        if (Math.abs(delta_x) + Math.abs(delta_y) !== 2) {
+            return false;
+        }
+
+        do {
+            sx += delta_x;
+            sy += delta_y;
+            if (sx === dx && sy === dy) {
+                return true;
+            }
+        } while (is_empty(sx, sy));
+
+        return false;
     }
 
     function is_correct_knight_move(sx, sy, dx, dy) {
@@ -133,7 +158,34 @@
     }
 
     function is_correct_rook_move(sx, sy, dx, dy) {
-        return true;
+        var delta_x = Math.sign(dx - sx);
+        var delta_y = Math.sign(dy - sy);
+
+        if (Math.abs(delta_x) + Math.abs(delta_y) !== 1) {
+            return false;
+        }
+
+        do {
+            sx += delta_x;
+            sy += delta_y;
+            if (sx === dx && sy === dy) {
+                return true;
+            }
+        } while (is_empty(sx, sy));
+
+        return false;
+    }
+
+    function is_empty(x, y) {
+        if(!on_map(x, y)) {
+            return false;
+        }
+        return map[x][y] === " ";
+    }
+
+    function on_map(x, y) {
+        return (x >= 0 && x < map.length &&
+            y >= 0 && y < map.length);
     }
 
     function is_correct_pawn_move(sx, sy, dx, dy) {
@@ -141,6 +193,7 @@
     }
 
     function can_move_from(x, y) {
+        if(!on_map(x, y)) return false;
         return get_color(x, y) === move_color;
     }
 
